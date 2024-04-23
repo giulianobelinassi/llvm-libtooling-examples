@@ -33,7 +33,7 @@ class PrintFunctionNamesVisitor : public RecursiveASTVisitor<PrintFunctionNamesV
     /* Print.  */
     llvm::outs() << fdecl->getNameAsString() << " at " <<
                     ploc.getFilename() << ":" << ploc.getLine() << ":" << ploc.getColumn() << '\n';
-    
+
     return true; // continue;
   }
 
@@ -49,6 +49,7 @@ int main(int argc, char **argv)
   }
 
   const std::vector<const char *> clang_args =  {
+    "",
     // For some reason libtooling do not pass the clang include folder.  Pass this then.
     "-I/usr/lib64/clang/" STRINGFY_VALUE(CLANG_VERSION_MAJOR) "/include",
     // Compile the file provided in argv[1].

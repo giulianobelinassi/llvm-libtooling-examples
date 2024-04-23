@@ -1,3 +1,5 @@
+/** Shows how one can iterate on macros  */
+
 #include <clang/Basic/Version.h> // For CLANG_VERSION_MAJOR
 #include "clang/Frontend/ASTUnit.h"
 #include "clang/Frontend/CompilerInstance.h"
@@ -23,7 +25,7 @@ int main(int argc, char **argv)
 
   const std::vector<const char *> clang_args =  {
     // For populating the PreprocessingRecord.
-    "-v",
+    "",
     "-Xclang", "-detailed-preprocessing-record",
     // For some reason libtooling do not pass the clang include folder.  Pass this then.
     "-I/usr/lib64/clang/" STRINGFY_VALUE(CLANG_VERSION_MAJOR) "/include",
@@ -82,7 +84,8 @@ static void Print_Macros(ASTUnit *ast)
        #if, or #undef are not modeled here.  For #undef you can figure its location
        my looking into the DefInfo from MacroDefintion object.  */
     if (MacroDefinitionRecord *macrodef = dyn_cast<MacroDefinitionRecord>(entity)) {
-      MacroDefinition md = pp.getMacroDefinitionAtLoc(macrodef->getName(), macrodef->getSourceRange().getEnd());
+      SourceLocation right_after_macrodef = macrodef->getSourceRange().getEnd().getLocWithOffset(1);
+      MacroDefinition md = pp.getMacroDefinitionAtLoc(macrodef->getName(), right_after_macrodef);
       if (MacroInfo *mi = md.getMacroInfo()) {
         Print_Macro(pp, macrodef->getName(), mi);
       }
@@ -117,5 +120,7 @@ static void Print_Macro(const Preprocessor &pp, const IdentifierInfo *id, const 
   for (const Token &tok : mi->tokens()) {
     llvm::outs() << pp.getSpelling(tok);
   }
+  /* And the information if it is used or not.  */
+  llvm::outs() << "  // used: " << (mi->isUsed() ? "true" : "false");
   llvm::outs() << '\n';
 }
