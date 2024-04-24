@@ -23,29 +23,6 @@ class PrintVarDefUseVisitor : public RecursiveASTVisitor<PrintVarDefUseVisitor>
       LookFor(look_for)
   {}
 
-  /* For statements declaring variables inside functions.  */
-  bool VisitDeclStmt(DeclStmt *stmt)
-  {
-    for (Decl *decl : stmt->decls()) {
-      if (NamedDecl *ndecl = dyn_cast<NamedDecl>(decl)) {
-        const std::string &name = ndecl->getNameAsString();
-        if (name == LookFor) {
-          SourceManager &sm = AST->getSourceManager();
-
-          /* Get the PresumedLoc, which contains more information about the location
-             of the declaration, such as the filename, line, column.  */
-          PresumedLoc ploc = sm.getPresumedLoc(stmt->getBeginLoc());
-
-          /* Print.  */
-          llvm::outs() << "Def of " << name << " at " <<
-                          ploc.getFilename() << ":" << ploc.getLine() << ":" << ploc.getColumn() << '\n';
-        }
-      }
-    }
-
-    return true;
-  }
-
   /* For global variable declarations, as well as function parameters.  */
   bool VisitVarDecl(VarDecl *decl) {
     const std::string &name = decl->getNameAsString();
